@@ -5,14 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>NANO QR</title>
-  <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#008c83">
 
 <link rel="stylesheet" href="styles.css">
 
 <script src="https://unpkg.com/html5-qrcode"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-  </head>
+</head>
 
 <body>
 
@@ -42,16 +40,17 @@ Trazabilidad de material
 </button>
 
 <button id="nuevoRack">
-    🗄️ CREAR RACK
+🗄️ CREAR RACK
 </button>
 
 <button id="consultarRack">
-    🔎 CONSULTAR RACK
+🔎 CONSULTAR RACK
 </button>
 
 <button id="abrirHistorial">
-    📚 HISTORIAL LOCAL
+📚 HISTORIAL LOCAL
 </button>
+
 </div>
 
 
@@ -591,20 +590,67 @@ class="secundario">
 </div>
 
 
+
+<!-- ================= HISTORIAL LOCAL ================= -->
+
+<div id="historial" class="oculto">
+
+<h2>📚 HISTORIAL LOCAL</h2>
+
+<p class="ayuda">
+Los pallets y racks se guardan en este dispositivo.
+</p>
+
+<input
+id="buscarHistorial"
+placeholder="Buscar pallet o rack..."
+>
+
+<div id="listaHistorial"></div>
+
+<button id="limpiarHistorial" class="peligro">
+🗑️ BORRAR HISTORIAL
+</button>
+
+<button id="cancelarHistorial" class="secundario">
+← MENÚ
+</button>
+
 </div>
 
-<script>
-if ("serviceWorker" in navigator) {
-    window.addEventListener("load", () => {
-        navigator.serviceWorker.register("./service-worker.js");
-    });
-}
-</script>
 
-<script src="https://unpkg.com/html5-qrcode"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<!-- ================= REPORTE ================= -->
+
+<div id="reporteNano" class="oculto">
+
+<h2>📋 REPORTE</h2>
+
+<p class="ayuda">
+Información lista para copiar o compartir.
+</p>
+
+<textarea
+id="textoReporteNano"
+readonly
+></textarea>
+
+<button id="copiarReporteNano">
+📋 COPIAR REPORTE
+</button>
+
+<button id="compartirReporteNano">
+📤 COMPARTIR REPORTE
+</button>
+
+<button id="volverReporteNano" class="secundario">
+← VOLVER
+</button>
+
+</div>
+
+</div>
+
 <script src="script.js"></script>
-<script src="offline-tools.js"></script>
 
 </body>
 </html>
