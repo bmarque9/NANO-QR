@@ -26,7 +26,6 @@ const NANO_SUPABASE_URL =
 const NANO_SUPABASE_KEY =
     "sb_publishable_jgN5hee6h-Xsohkoe8pfug__oWSZRyK";
 
-
 /*
    ========================================================
    2. CLIENTE SUPABASE
