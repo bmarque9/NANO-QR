@@ -15,7 +15,7 @@ const NANO_SUPABASE_URL =
    NO uses una secret key.
 */
 const NANO_SUPABASE_KEY =
-    "PEGA_AQUI_TU_SB_PUBLISHABLE_KEY";
+    "sb_publishable_jgN5hee6h-Xsohkoe8pfug__oWSZRyK";
 
 
 /* =========================================================
