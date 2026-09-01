@@ -28,7 +28,7 @@ let escaneandoPalletRack = false;
 
 let escaneandoRack = false;
 /* =========================================
-   ACCESO DE SUPABASE A LAS PIEZAS ACTUALES
+   PUENTE PARA SUPABASE
    ========================================= */
 
 window.NANO_GET_PIEZAS = function() {
