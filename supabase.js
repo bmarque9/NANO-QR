@@ -3,7 +3,7 @@
    ========================================================= */
 
 const NANO_SUPABASE_URL =
-    "https://xmlifzybnovnmjdvsaxl.supabase.co";
+   "https://xmlifzybnovnmjdvsaxl.supabase.co";
 
 const NANO_SUPABASE_KEY =
     "sb_publishable_jgN5hee6h-Xsohkoe8pfug__oWSZRyK";
