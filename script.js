@@ -5183,3 +5183,232 @@ console.log(
     );
 
 })();
+/* =========================================================
+   NANO QR - BOTONES DEL REPORTE
+   ========================================================= */
+
+document.addEventListener("click", async function (evento) {
+
+    const boton = evento.target.closest("button");
+
+    if (!boton) {
+        return;
+    }
+
+
+    /* ================================
+       COPIAR REPORTE
+       ================================ */
+
+    if (boton.id === "copiarReporteNano") {
+
+        evento.preventDefault();
+
+        const campo =
+            document.getElementById(
+                "textoReporteNano"
+            );
+
+        if (!campo) {
+
+            alert(
+                "No se encontró el reporte."
+            );
+
+            return;
+
+        }
+
+        const texto =
+            campo.value || campo.textContent || "";
+
+        if (!texto.trim()) {
+
+            alert(
+                "El reporte está vacío."
+            );
+
+            return;
+
+        }
+
+
+        try {
+
+            await navigator.clipboard.writeText(
+                texto
+            );
+
+            alert(
+                "✅ REPORTE COPIADO\n\nPuedes pegarlo en WhatsApp, correo o Word."
+            );
+
+        }
+
+        catch (error) {
+
+            campo.focus();
+
+            campo.select();
+
+            try {
+
+                document.execCommand(
+                    "copy"
+                );
+
+                alert(
+                    "✅ REPORTE COPIADO"
+                );
+
+            }
+
+            catch {
+
+                alert(
+                    "No se pudo copiar el reporte."
+                );
+
+            }
+
+        }
+
+        return;
+
+    }
+
+
+    /* ================================
+       COMPARTIR REPORTE
+       ================================ */
+
+    if (boton.id === "compartirReporteNano") {
+
+        evento.preventDefault();
+
+        const campo =
+            document.getElementById(
+                "textoReporteNano"
+            );
+
+        if (!campo) {
+
+            alert(
+                "No se encontró el reporte."
+            );
+
+            return;
+
+        }
+
+        const texto =
+            campo.value || campo.textContent || "";
+
+        if (!texto.trim()) {
+
+            alert(
+                "El reporte está vacío."
+            );
+
+            return;
+
+        }
+
+
+        if (
+            navigator.share
+        ) {
+
+            try {
+
+                await navigator.share({
+
+                    title:
+                        "Reporte NANO QR",
+
+                    text:
+                        texto
+
+                });
+
+            }
+
+            catch (error) {
+
+                /*
+                 * Si el usuario cancela,
+                 * no hacemos nada.
+                 */
+
+            }
+
+        }
+
+        else {
+
+            try {
+
+                await navigator.clipboard.writeText(
+                    texto
+                );
+
+                alert(
+                    "✅ El reporte fue copiado porque este dispositivo no permite compartir directamente."
+                );
+
+            }
+
+            catch {
+
+                alert(
+                    "No se pudo compartir el reporte."
+                );
+
+            }
+
+        }
+
+        return;
+
+    }
+
+
+    /* ================================
+       VOLVER
+       ================================ */
+
+    if (boton.id === "volverReporteNano") {
+
+        evento.preventDefault();
+
+        document
+            .querySelectorAll(
+                ".app > div"
+            )
+            .forEach(
+                function (pantalla) {
+
+                    pantalla.classList.add(
+                        "oculto"
+                    );
+
+                }
+            );
+
+
+        const menu =
+            document.getElementById(
+                "menu"
+            );
+
+        if (menu) {
+
+            menu.classList.remove(
+                "oculto"
+            );
+
+        }
+
+    }
+
+});
