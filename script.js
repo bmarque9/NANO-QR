@@ -1956,3 +1956,1261 @@ document.getElementById(
 mostrar(
 document.getElementById("menu")
 );
+/* =========================================================
+   NANO QR V1.1 — HISTORIAL LOCAL + REPORTES
+   Sin base de datos
+   ========================================================= */
+
+(function(){
+"use strict";
+
+const NANO_STORAGE={
+    pallets:"NANO_QR_PALLETS_V1",
+    racks:"NANO_QR_RACKS_V1"
+};
+
+function nanoStorageRead(key){
+    try{
+        const raw=localStorage.getItem(key);
+        const data=raw?JSON.parse(raw):[];
+        return Array.isArray(data)?data:[];
+    }catch(e){
+        console.error("NANO QR almacenamiento:",e);
+        return [];
+    }
+}
+
+function nanoStorageWrite(key,data){
+    localStorage.setItem(key,JSON.stringify(data));
+}
+
+function nanoGuardarPalletLocal(id,piezas){
+    if(!id || !Array.isArray(piezas) || piezas.length===0)return;
+
+    const items=
+        nanoStorageRead(
+            NANO_STORAGE.pallets
+        );
+
+    const registro={
+        id:String(id),
+        piezas:JSON.parse(
+            JSON.stringify(piezas)
+        ),
+        fecha:new Date().toISOString()
+    };
+
+    const i=
+        items.findIndex(
+            x=>x.id===registro.id
+        );
+
+    if(i>=0){
+        items[i]=registro;
+    }else{
+        items.unshift(registro);
+    }
+
+    nanoStorageWrite(
+        NANO_STORAGE.pallets,
+        items
+    );
+}
+
+function nanoGuardarRackLocal(id,pallets){
+    if(!id || !Array.isArray(pallets) || pallets.length===0)return;
+
+    const items=
+        nanoStorageRead(
+            NANO_STORAGE.racks
+        );
+
+    const registro={
+        id:String(id),
+        pallets:JSON.parse(
+            JSON.stringify(pallets)
+        ),
+        fecha:new Date().toISOString()
+    };
+
+    const i=
+        items.findIndex(
+            x=>x.id===registro.id
+        );
+
+    if(i>=0){
+        items[i]=registro;
+    }else{
+        items.unshift(registro);
+    }
+
+    nanoStorageWrite(
+        NANO_STORAGE.racks,
+        items
+    );
+}
+
+function nanoFecha(iso){
+    try{
+        return new Date(
+            iso
+        ).toLocaleString(
+            "es-MX"
+        );
+    }catch(e){
+        return "";
+    }
+}
+
+function nanoCrearReportePallet(
+    id,
+    piezas,
+    fecha
+){
+    piezas=
+        Array.isArray(piezas)
+            ? piezas
+            : [];
+
+    const c27=
+        piezas.filter(
+            p=>p.modelo==="2.7"
+        ).length;
+
+    const c30=
+        piezas.filter(
+            p=>p.modelo==="3.0"
+        ).length;
+
+    let r=
+        "NANO QR — REPORTE DE TRAZABILIDAD\n\n";
+
+    r+=
+        `PALLET: ${
+            id ||
+            "SIN IDENTIFICADOR"
+        }\n`;
+
+    r+=
+        `FECHA: ${
+            fecha ||
+            new Date().toLocaleString("es-MX")
+        }\n\n`;
+
+    r+="RESUMEN\n";
+
+    r+="----------------------------\n";
+
+    r+=
+        `Total de piezas: ${
+            piezas.length
+        } / 18\n`;
+
+    r+=
+        `Modelo 2.7: ${
+            c27
+        }\n`;
+
+    r+=
+        `Modelo 3.0: ${
+            c30
+        }\n\n`;
+
+    r+="DETALLE DE PIEZAS\n";
+
+    r+="----------------------------\n\n";
+
+    piezas.forEach(
+        (p,i)=>{
+
+            r+=
+                `${
+                    String(i+1)
+                    .padStart(2,"0")
+                } | ${
+                    p.serie ||
+                    "SIN SERIE"
+                }\n`;
+
+            r+=
+                `    Modelo: ${
+                    p.modelo ||
+                    "NO IDENTIFICADO"
+                }\n`;
+
+            r+=
+                `    Código: ${
+                    p.codigo ||
+                    "NO IDENTIFICADO"
+                }\n`;
+
+            r+=
+                `    Nota: ${
+                    p.nota ||
+                    "Sin nota"
+                }\n\n`;
+        }
+    );
+
+    r+="----------------------------\n";
+
+    r+="Generado por NANO QR";
+
+    return r;
+}
+
+function nanoCrearReporteRack(
+    id,
+    pallets,
+    fecha
+){
+    pallets=
+        Array.isArray(pallets)
+            ? pallets
+            : [];
+
+    let total=0;
+    let c27=0;
+    let c30=0;
+
+    let r=
+        "NANO QR — REPORTE DE RACK\n\n";
+
+    r+=
+        `RACK: ${
+            id ||
+            "SIN IDENTIFICADOR"
+        }\n`;
+
+    r+=
+        `FECHA: ${
+            fecha ||
+            new Date().toLocaleString("es-MX")
+        }\n\n`;
+
+    pallets.forEach(
+        p=>{
+
+            const piezas=
+                Array.isArray(
+                    p.piezas
+                )
+                    ? p.piezas
+                    : [];
+
+            total+=
+                piezas.length;
+
+            c27+=
+                piezas.filter(
+                    x=>x.modelo==="2.7"
+                ).length;
+
+            c30+=
+                piezas.filter(
+                    x=>x.modelo==="3.0"
+                ).length;
+        }
+    );
+
+    r+="RESUMEN\n";
+
+    r+="----------------------------\n";
+
+    r+=
+        `Pallets: ${
+            pallets.length
+        }\n`;
+
+    r+=
+        `Piezas: ${
+            total
+        }\n`;
+
+    r+=
+        `Modelo 2.7: ${
+            c27
+        }\n`;
+
+    r+=
+        `Modelo 3.0: ${
+            c30
+        }\n\n`;
+
+    r+="PALLETS\n";
+
+    r+="----------------------------\n\n";
+
+    pallets.forEach(
+        (p,i)=>{
+
+            const piezas=
+                Array.isArray(
+                    p.piezas
+                )
+                    ? p.piezas
+                    : [];
+
+            r+=
+                `${
+                    String(i+1)
+                    .padStart(2,"0")
+                } | ${
+                    p.pallet ||
+                    "SIN IDENTIFICADOR"
+                }\n`;
+
+            r+=
+                `    Piezas: ${
+                    piezas.length
+                }\n`;
+
+            r+=
+                `    2.7: ${
+                    piezas.filter(
+                        x=>x.modelo==="2.7"
+                    ).length
+                }\n`;
+
+            r+=
+                `    3.0: ${
+                    piezas.filter(
+                        x=>x.modelo==="3.0"
+                    ).length
+                }\n\n`;
+        }
+    );
+
+    r+="----------------------------\n";
+
+    r+="Generado por NANO QR";
+
+    return r;
+}
+
+async function nanoCopiar(texto){
+    try{
+
+        await navigator.clipboard.writeText(
+            texto
+        );
+
+        alert(
+            "✅ Reporte copiado. Ya puedes pegarlo en WhatsApp, correo, Teams o Word."
+        );
+
+    }catch(e){
+
+        const ta=
+            document.createElement(
+                "textarea"
+            );
+
+        ta.value=
+            texto;
+
+        ta.style.position=
+            "fixed";
+
+        ta.style.left=
+            "-9999px";
+
+        document.body.appendChild(
+            ta
+        );
+
+        ta.select();
+
+        try{
+            document.execCommand(
+                "copy"
+            );
+        }catch(_){}
+
+        ta.remove();
+
+        alert(
+            "✅ Reporte copiado."
+        );
+    }
+}
+
+function nanoCompartir(texto){
+
+    if(
+        navigator.share
+    ){
+
+        navigator.share({
+            title:
+                "Reporte NANO QR",
+            text:
+                texto
+        })
+        .catch(()=>{});
+
+    }else{
+
+        nanoCopiar(
+            texto
+        );
+
+    }
+}
+
+function nanoPiezaActualSnapshot(){
+
+    return JSON.parse(
+        JSON.stringify(
+            Array.isArray(
+                palletActual
+            )
+                ? palletActual
+                : []
+        )
+    );
+
+}
+
+function nanoCrearPantallaHistorial(){
+
+    if(
+        document.getElementById(
+            "historial"
+        )
+    ){
+        return;
+    }
+
+    const app=
+        document.querySelector(
+            ".app"
+        );
+
+    const div=
+        document.createElement(
+            "div"
+        );
+
+    div.id=
+        "historial";
+
+    div.className=
+        "oculto";
+
+    div.innerHTML=`
+
+        <h2>📚 HISTORIAL LOCAL</h2>
+
+        <p class="ayuda">
+            Información guardada en este dispositivo.
+        </p>
+
+        <input
+            id="buscarHistorial"
+            placeholder="Buscar pallet o rack..."
+        >
+
+        <div id="listaHistorial"></div>
+
+        <button
+            id="limpiarHistorial"
+            class="peligro"
+        >
+            🗑️ BORRAR HISTORIAL
+        </button>
+
+        <button
+            id="cancelarHistorial"
+            class="secundario"
+        >
+            ← MENÚ
+        </button>
+
+    `;
+
+    app.appendChild(
+        div
+    );
+}
+
+function nanoCrearPantallaReporte(){
+
+    if(
+        document.getElementById(
+            "reporteNano"
+        )
+    ){
+        return;
+    }
+
+    const app=
+        document.querySelector(
+            ".app"
+        );
+
+    const div=
+        document.createElement(
+            "div"
+        );
+
+    div.id=
+        "reporteNano";
+
+    div.className=
+        "oculto";
+
+    div.innerHTML=`
+
+        <h2>📋 REPORTE</h2>
+
+        <p class="ayuda">
+            Listo para copiar o compartir.
+        </p>
+
+        <textarea
+            id="textoReporteNano"
+            readonly
+            style="
+                width:100%;
+                min-height:420px;
+                padding:15px;
+                border:1px solid #ccc;
+                border-radius:10px;
+                font-family:Arial,sans-serif;
+                font-size:14px;
+                line-height:1.45;
+                resize:vertical;
+            "
+        ></textarea>
+
+        <button
+            id="copiarReporteNano"
+        >
+            📋 COPIAR REPORTE
+        </button>
+
+        <button
+            id="compartirReporteNano"
+        >
+            📤 COMPARTIR REPORTE
+        </button>
+
+        <button
+            id="volverReporteNano"
+            class="secundario"
+        >
+            ← VOLVER
+        </button>
+
+    `;
+
+    app.appendChild(
+        div
+    );
+
+    div
+        .querySelector(
+            "#copiarReporteNano"
+        )
+        .onclick=
+        ()=>{
+            nanoCopiar(
+                div
+                    .querySelector(
+                        "#textoReporteNano"
+                    )
+                    .value
+            );
+        };
+
+    div
+        .querySelector(
+            "#compartirReporteNano"
+        )
+        .onclick=
+        ()=>{
+            nanoCompartir(
+                div
+                    .querySelector(
+                        "#textoReporteNano"
+                    )
+                    .value
+            );
+        };
+
+    div
+        .querySelector(
+            "#volverReporteNano"
+        )
+        .onclick=
+        ()=>{
+            mostrar(
+                document.getElementById(
+                    "menu"
+                )
+            );
+        };
+
+}
+
+function nanoMostrarReportePallet(
+    id,
+    piezas
+){
+
+    nanoCrearPantallaReporte();
+
+    const texto=
+        nanoCrearReportePallet(
+            id,
+            piezas,
+            new Date().toLocaleString(
+                "es-MX"
+            )
+        );
+
+    document.getElementById(
+        "textoReporteNano"
+    ).value=
+        texto;
+
+    mostrar(
+        document.getElementById(
+            "reporteNano"
+        )
+    );
+
+    try{
+
+        localStorage.setItem(
+            "NANO_QR_ULTIMO_REPORTE",
+            JSON.stringify({
+
+                tipo:
+                    "pallet",
+
+                id:
+                    id,
+
+                texto:
+                    texto,
+
+                fecha:
+                    new Date().toISOString()
+
+            })
+        );
+
+    }catch(e){}
+
+}
+
+function nanoMostrarReporteRack(
+    id,
+    pallets
+){
+
+    nanoCrearPantallaReporte();
+
+    const texto=
+        nanoCrearReporteRack(
+            id,
+            pallets,
+            new Date().toLocaleString(
+                "es-MX"
+            )
+        );
+
+    document.getElementById(
+        "textoReporteNano"
+    ).value=
+        texto;
+
+    mostrar(
+        document.getElementById(
+            "reporteNano"
+        )
+    );
+
+}
+
+function nanoRenderHistorial(
+    filtro=""
+){
+
+    nanoCrearPantallaHistorial();
+
+    const lista=
+        document.getElementById(
+            "listaHistorial"
+        );
+
+    lista.innerHTML=
+        "";
+
+    const q=
+        filtro.toLowerCase();
+
+    const pallets=
+        nanoStorageRead(
+            NANO_STORAGE.pallets
+        )
+        .filter(
+            x =>
+                x.id
+                    .toLowerCase()
+                    .includes(q)
+        );
+
+    const racks=
+        nanoStorageRead(
+            NANO_STORAGE.racks
+        )
+        .filter(
+            x =>
+                x.id
+                    .toLowerCase()
+                    .includes(q)
+        );
+
+
+    if(
+        !pallets.length &&
+        !racks.length
+    ){
+
+        lista.innerHTML=
+            "<p style='color:#777'>No hay registros guardados.</p>";
+
+        return;
+    }
+
+
+    if(
+        pallets.length
+    ){
+
+        const h=
+            document.createElement(
+                "h3"
+            );
+
+        h.textContent=
+            "📦 PALLETS";
+
+        lista.appendChild(
+            h
+        );
+
+
+        pallets.forEach(
+            reg=>{
+
+                const box=
+                    document.createElement(
+                        "div"
+                    );
+
+                box.className=
+                    "pieza";
+
+                box.innerHTML=`
+
+                    <strong>
+                        ${reg.id}
+                    </strong>
+
+                    <span>
+                        ${reg.piezas.length}
+                        piezas
+                    </span>
+
+                    <span>
+                        ${nanoFecha(reg.fecha)}
+                    </span>
+
+                `;
+
+
+                const abrir=
+                    document.createElement(
+                        "button"
+                    );
+
+                abrir.textContent=
+                    "📋 ABRIR REPORTE";
+
+                abrir.onclick=
+                    ()=>{
+                        nanoMostrarReportePallet(
+                            reg.id,
+                            reg.piezas
+                        );
+                    };
+
+
+                const eliminar=
+                    document.createElement(
+                        "button"
+                    );
+
+                eliminar.className=
+                    "peligro";
+
+                eliminar.textContent=
+                    "🗑️ ELIMINAR";
+
+                eliminar.onclick=
+                    ()=>{
+
+                        if(
+                            !confirm(
+                                "¿Eliminar el pallet " +
+                                reg.id +
+                                " del historial?"
+                            )
+                        ){
+                            return;
+                        }
+
+                        const nuevos=
+                            nanoStorageRead(
+                                NANO_STORAGE.pallets
+                            )
+                            .filter(
+                                x =>
+                                    x.id !==
+                                    reg.id
+                            );
+
+                        nanoStorageWrite(
+                            NANO_STORAGE.pallets,
+                            nuevos
+                        );
+
+                        nanoRenderHistorial(
+                            document.getElementById(
+                                "buscarHistorial"
+                            ).value
+                        );
+
+                    };
+
+
+                box.appendChild(
+                    abrir
+                );
+
+                box.appendChild(
+                    eliminar
+                );
+
+                lista.appendChild(
+                    box
+                );
+
+            }
+        );
+
+    }
+
+
+    if(
+        racks.length
+    ){
+
+        const h=
+            document.createElement(
+                "h3"
+            );
+
+        h.textContent=
+            "🗄️ RACKS";
+
+        lista.appendChild(
+            h
+        );
+
+
+        racks.forEach(
+            reg=>{
+
+                const box=
+                    document.createElement(
+                        "div"
+                    );
+
+                box.className=
+                    "pieza";
+
+                box.innerHTML=`
+
+                    <strong>
+                        ${reg.id}
+                    </strong>
+
+                    <span>
+                        ${reg.pallets.length}
+                        pallets
+                    </span>
+
+                    <span>
+                        ${nanoFecha(reg.fecha)}
+                    </span>
+
+                `;
+
+
+                const abrir=
+                    document.createElement(
+                        "button"
+                    );
+
+                abrir.textContent=
+                    "📋 ABRIR REPORTE";
+
+                abrir.onclick=
+                    ()=>{
+                        nanoMostrarReporteRack(
+                            reg.id,
+                            reg.pallets
+                        );
+                    };
+
+
+                const eliminar=
+                    document.createElement(
+                        "button"
+                    );
+
+                eliminar.className=
+                    "peligro";
+
+                eliminar.textContent=
+                    "🗑️ ELIMINAR";
+
+                eliminar.onclick=
+                    ()=>{
+
+                        if(
+                            !confirm(
+                                "¿Eliminar el rack " +
+                                reg.id +
+                                " del historial?"
+                            )
+                        ){
+                            return;
+                        }
+
+                        const nuevos=
+                            nanoStorageRead(
+                                NANO_STORAGE.racks
+                            )
+                            .filter(
+                                x =>
+                                    x.id !==
+                                    reg.id
+                            );
+
+                        nanoStorageWrite(
+                            NANO_STORAGE.racks,
+                            nuevos
+                        );
+
+                        nanoRenderHistorial(
+                            document.getElementById(
+                                "buscarHistorial"
+                            ).value
+                        );
+
+                    };
+
+
+                box.appendChild(
+                    abrir
+                );
+
+                box.appendChild(
+                    eliminar
+                );
+
+                lista.appendChild(
+                    box
+                );
+
+            }
+        );
+
+    }
+
+}
+
+function nanoHookHistorial(){
+
+    const boton=
+        document.getElementById(
+            "abrirHistorial"
+        );
+
+    if(
+        boton &&
+        !boton.dataset.nanoHook
+    ){
+
+        boton.dataset.nanoHook=
+            "1";
+
+        boton.onclick=
+            ()=>{
+                nanoRenderHistorial();
+
+                mostrar(
+                    document.getElementById(
+                        "historial"
+                    )
+                );
+            };
+
+    }
+
+
+    const cancelar=
+        document.getElementById(
+            "cancelarHistorial"
+        );
+
+    if(
+        cancelar &&
+        !cancelar.dataset.nanoHook
+    ){
+
+        cancelar.dataset.nanoHook=
+            "1";
+
+        cancelar.onclick=
+            ()=>{
+                mostrar(
+                    document.getElementById(
+                        "menu"
+                    )
+                );
+            };
+
+    }
+
+
+    const buscar=
+        document.getElementById(
+            "buscarHistorial"
+        );
+
+    if(
+        buscar &&
+        !buscar.dataset.nanoHook
+    ){
+
+        buscar.dataset.nanoHook=
+            "1";
+
+        buscar.addEventListener(
+            "input",
+            ()=>{
+                nanoRenderHistorial(
+                    buscar.value
+                );
+            }
+        );
+
+    }
+
+
+    const limpiar=
+        document.getElementById(
+            "limpiarHistorial"
+        );
+
+    if(
+        limpiar &&
+        !limpiar.dataset.nanoHook
+    ){
+
+        limpiar.dataset.nanoHook=
+            "1";
+
+        limpiar.onclick=
+            ()=>{
+
+                if(
+                    !confirm(
+                        "¿Borrar todo el historial guardado en este dispositivo?"
+                    )
+                ){
+                    return;
+                }
+
+                localStorage.removeItem(
+                    NANO_STORAGE.pallets
+                );
+
+                localStorage.removeItem(
+                    NANO_STORAGE.racks
+                );
+
+                nanoRenderHistorial();
+
+            };
+
+    }
+
+}
+
+
+/* =========================================================
+   INICIALIZACIÓN
+   ========================================================= */
+
+window.addEventListener(
+    "load",
+    function(){
+
+        setTimeout(
+            function(){
+
+                nanoHookHistorial();
+
+                const finalizar=
+                    document.getElementById(
+                        "finalizarPallet"
+                    );
+
+                if(
+                    finalizar &&
+                    !finalizar.dataset.nanoV11
+                ){
+
+                    finalizar.dataset.nanoV11=
+                        "1";
+
+                    finalizar.addEventListener(
+                        "click",
+                        function(){
+
+                            setTimeout(
+                                function(){
+
+                                    try{
+
+                                        const id=
+                                            document
+                                                .getElementById(
+                                                    "palletNumero"
+                                                )
+                                                ?.value
+                                                .trim();
+
+                                        const piezas=
+                                            nanoPiezaActualSnapshot();
+
+                                        nanoGuardarPalletLocal(
+                                            id,
+                                            piezas
+                                        );
+
+                                        nanoMostrarReportePallet(
+                                            id,
+                                            piezas
+                                        );
+
+                                    }catch(error){
+
+                                        console.error(
+                                            "NANO QR V1.1:",
+                                            error
+                                        );
+
+                                    }
+
+                                },
+                                150
+                            );
+
+                        }
+                    );
+
+                }
+
+
+                const finalizarRack=
+                    document.getElementById(
+                        "finalizarRack"
+                    );
+
+                if(
+                    finalizarRack &&
+                    !finalizarRack.dataset.nanoV11
+                ){
+
+                    finalizarRack.dataset.nanoV11=
+                        "1";
+
+                    finalizarRack.addEventListener(
+                        "click",
+                        function(){
+
+                            setTimeout(
+                                function(){
+
+                                    try{
+
+                                        const id=
+                                            document
+                                                .getElementById(
+                                                    "rackNumero"
+                                                )
+                                                ?.value
+                                                .trim();
+
+                                        const pallets=
+                                            JSON.parse(
+                                                JSON.stringify(
+                                                    Array.isArray(
+                                                        rackActual
+                                                    )
+                                                        ? rackActual
+                                                        : []
+                                                )
+                                            );
+
+                                        nanoGuardarRackLocal(
+                                            id,
+                                            pallets
+                                        );
+
+                                    }catch(error){
+
+                                        console.error(
+                                            "NANO QR V1.1 rack:",
+                                            error
+                                        );
+
+                                    }
+
+                                },
+                                150
+                            );
+
+                        }
+                    );
+
+                }
+
+            },
+            500
+        );
+
+    }
+);
+
+
+})();
