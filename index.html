@@ -651,6 +651,267 @@ readonly
 </div>
 
 <script src="script.js"></script>
+<script>
+/* =========================================================
+   NANO QR - BOTONES DE REPORTE
+   CORRECCIÓN DIRECTA
+   ========================================================= */
 
+(function () {
+
+    function obtenerReporte() {
+
+        const campo =
+            document.getElementById(
+                "textoReporteNano"
+            );
+
+        if (!campo) {
+            return "";
+        }
+
+        return campo.value || "";
+
+    }
+
+
+    async function copiarReporte() {
+
+        const reporte =
+            obtenerReporte();
+
+        if (!reporte.trim()) {
+
+            alert(
+                "El reporte está vacío."
+            );
+
+            return;
+
+        }
+
+        try {
+
+            await navigator.clipboard.writeText(
+                reporte
+            );
+
+            alert(
+                "✅ REPORTE COPIADO\n\nYa puedes pegarlo en WhatsApp, correo o Word."
+            );
+
+        } catch (error) {
+
+            const campo =
+                document.getElementById(
+                    "textoReporteNano"
+                );
+
+            if (campo) {
+
+                campo.focus();
+                campo.select();
+
+                document.execCommand(
+                    "copy"
+                );
+
+                alert(
+                    "✅ REPORTE COPIADO"
+                );
+
+            } else {
+
+                alert(
+                    "No se pudo copiar el reporte."
+                );
+
+            }
+
+        }
+
+    }
+
+
+    async function compartirReporte() {
+
+        const reporte =
+            obtenerReporte();
+
+        if (!reporte.trim()) {
+
+            alert(
+                "El reporte está vacío."
+            );
+
+            return;
+
+        }
+
+
+        if (
+            navigator.share
+        ) {
+
+            try {
+
+                await navigator.share({
+
+                    title:
+                        "NANO QR - Reporte",
+
+                    text:
+                        reporte
+
+                });
+
+            } catch (error) {
+
+                /* Cancelación normal del menú compartir */
+
+            }
+
+        } else {
+
+            await copiarReporte();
+
+        }
+
+    }
+
+
+    function volverReporte() {
+
+        const pantallas =
+            document.querySelectorAll(
+                ".app > div"
+            );
+
+        pantallas.forEach(
+            function (pantalla) {
+
+                pantalla.classList.add(
+                    "oculto"
+                );
+
+            }
+        );
+
+
+        const menu =
+            document.getElementById(
+                "menu"
+            );
+
+        if (menu) {
+
+            menu.classList.remove(
+                "oculto"
+            );
+
+        }
+
+    }
+
+
+    /*
+     * Usamos CAPTURA para asegurarnos de que
+     * ningún otro evento bloquee estos botones.
+     */
+
+    document.addEventListener(
+        "click",
+        function (evento) {
+
+            const boton =
+                evento.target.closest(
+                    "button"
+                );
+
+            if (!boton) {
+                return;
+            }
+
+
+            /* COPIAR */
+
+            if (
+                boton.id ===
+                "copiarReporteNano" ||
+                boton.textContent
+                    .includes(
+                        "COPIAR REPORTE"
+                    )
+            ) {
+
+                evento.preventDefault();
+                evento.stopPropagation();
+
+                copiarReporte();
+
+                return;
+            }
+
+
+            /* COMPARTIR */
+
+            if (
+                boton.id ===
+                "compartirReporteNano" ||
+                boton.textContent
+                    .includes(
+                        "COMPARTIR REPORTE"
+                    )
+            ) {
+
+                evento.preventDefault();
+                evento.stopPropagation();
+
+                compartirReporte();
+
+                return;
+            }
+
+
+            /* VOLVER */
+
+            if (
+                boton.id ===
+                "volverReporteNano" ||
+                (
+                    boton.textContent
+                        .includes(
+                            "VOLVER"
+                        ) &&
+                    document.getElementById(
+                        "reporteNano"
+                    ) &&
+                    !document.getElementById(
+                        "reporteNano"
+                    ).classList.contains(
+                        "oculto"
+                    )
+                )
+            ) {
+
+                evento.preventDefault();
+                evento.stopPropagation();
+
+                volverReporte();
+
+                return;
+            }
+
+        },
+        true
+    );
+
+
+    console.log(
+        "✅ NANO QR: botones de reporte activos."
+    );
+
+})();
+</script>
 </body>
 </html>
