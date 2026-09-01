@@ -1,747 +1,893 @@
 /* =========================================================
    NANO QR - CONEXIÓN SUPABASE
+   Guarda PALLETS y PIEZAS desde la aplicación
    ========================================================= */
 
 const NANO_SUPABASE_URL =
     "https://xmlifzybnovnmjdsaxl.supabase.co";
 
+/*
+   PEGA AQUÍ TU PUBLISHABLE KEY DE SUPABASE.
+
+   Debe comenzar por:
+   sb_publishable_
+
+   NO uses una secret key.
+*/
 const NANO_SUPABASE_KEY =
-    "sb_publishable_jgN5hee6h-Xsohkoe8pfug__oWSZRyK";
+    "PEGA_AQUI_TU_SB_PUBLISHABLE_KEY";
 
 
 /* =========================================================
-   CLIENTE SUPABASE
+   CREAR CLIENTE SUPABASE
    ========================================================= */
 
-if (
-    !window.supabase ||
-    !window.supabase.createClient
-) {
-    throw new Error(
-        "No se pudo cargar la librería de Supabase."
+let nanoClient = null;
+
+
+function iniciarSupabase() {
+
+    if (
+        !window.supabase ||
+        !window.supabase.createClient
+    ) {
+
+        console.error(
+            "La librería de Supabase no está disponible."
+        );
+
+        return false;
+    }
+
+
+    if (!NANO_SUPABASE_KEY ||
+        NANO_SUPABASE_KEY ===
+        "sb_publishable_jgN5hee6h-Xsohkoe8pfug__oWSZRyK") {
+
+        console.error(
+            "Falta la Publishable Key."
+        );
+
+        return false;
+    }
+
+
+    nanoClient =
+        window.supabase.createClient(
+            NANO_SUPABASE_URL,
+            NANO_SUPABASE_KEY
+        );
+
+
+    console.log(
+        "✅ NANO QR conectado con Supabase"
     );
+
+
+    return true;
 }
 
 
-const nanoClient =
-    window.supabase.createClient(
-        NANO_SUPABASE_URL,
-        NANO_SUPABASE_KEY
+if (
+    document.readyState ===
+    "loading"
+) {
+
+    document.addEventListener(
+        "DOMContentLoaded",
+        iniciarSupabase
     );
+
+}
+else {
+
+    iniciarSupabase();
+
+}
 
 
 /* =========================================================
-   GUARDAR PALLET Y SUS PIEZAS
+   GENERAR QR DE PALLET
    ========================================================= */
 
-async function nanoGuardarPallet(
-    identificador,
-    piezas
+function nanoGenerarQRPallet(
+    identificador
 ) {
 
-    /* Buscar si ya existe */
-
-    const { data: existente, error: errorBusqueda } =
-        await nanoClient
-            .from("pallets")
-            .select("id, identificador")
-            .eq(
-                "identificador",
-                identificador
-            )
-            .maybeSingle();
+    const contenedor =
+        document.getElementById(
+            "codigoQR"
+        );
 
 
-    if (errorBusqueda) {
-        throw errorBusqueda;
+    if (!contenedor) {
+        return;
     }
 
 
-    let pallet;
+    contenedor.innerHTML = "";
 
 
-    /* =====================================
-       SI YA EXISTE
-       ===================================== */
+    document
+        .getElementById(
+            "qrPalletNumero"
+        )
+        .textContent =
+        identificador;
 
-    if (existente) {
 
-        pallet = existente;
+    const informacionQR = JSON.stringify({
+
+        tipo:
+            "PALLET",
+
+        id:
+            identificador
+
+    });
+
+
+    if (
+        typeof QRCode ===
+        "undefined"
+    ) {
+
+        console.error(
+            "No está disponible QRCode."
+        );
+
+        return;
 
     }
 
 
-    /* =====================================
-       SI NO EXISTE
-       ===================================== */
+    new QRCode(
 
-    else {
+        contenedor,
 
-        const { data, error } =
-            await nanoClient
-                .from("pallets")
-                .insert({
+        {
 
-                    identificador:
-                        identificador,
+            text:
+                informacionQR,
 
-                    estado:
-                        "ACTIVO",
+            width:
+                240,
 
-                    nota:
-                        ""
+            height:
+                240,
 
-                })
-                .select()
-                .single();
+            correctLevel:
+                QRCode.CorrectLevel.M
 
-
-        if (error) {
-            throw error;
         }
 
-
-        pallet = data;
-
-    }
+    );
 
 
-    /* =====================================
-       OBTENER PIEZAS ACTUALES
-       ===================================== */
+    const pantalla =
+        document.getElementById(
+            "qrPallet"
+        );
 
-    const { data: actuales, error: errorActuales } =
-        await nanoClient
-            .from("piezas")
-            .select("id, numero_serie")
-            .eq(
-                "pallet_id",
-                pallet.id
+
+    if (pantalla) {
+
+        document
+            .querySelectorAll(
+                ".app > div"
+            )
+            .forEach(
+                function(div) {
+
+                    div.classList.add(
+                        "oculto"
+                    );
+
+                }
             );
 
 
-    if (errorActuales) {
-        throw errorActuales;
+        pantalla.classList.remove(
+            "oculto"
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   GUARDAR PALLET + PIEZAS
+   ========================================================= */
+
+async function nanoGuardarPalletCompleto(
+
+    identificador,
+    piezas
+
+) {
+
+    if (!nanoClient) {
+
+        if (!iniciarSupabase()) {
+
+            throw new Error(
+                "No se pudo conectar con Supabase."
+            );
+
+        }
+
     }
 
 
-    const seriesNuevas =
+    if (!identificador) {
+
+        throw new Error(
+            "El pallet no tiene identificador."
+        );
+
+    }
+
+
+    if (
+        !Array.isArray(piezas) ||
+        piezas.length === 0
+    ) {
+
+        throw new Error(
+            "El pallet no tiene piezas."
+        );
+
+    }
+
+
+    if (piezas.length > 18) {
+
+        throw new Error(
+            "Un pallet no puede tener más de 18 piezas."
+        );
+
+    }
+
+
+    /* =====================================================
+       VERIFICAR PALLET EXISTENTE
+       ===================================================== */
+
+    const {
+
+        data: palletExistente,
+
+        error: errorBusqueda
+
+    } = await nanoClient
+
+        .from("pallets")
+
+        .select(
+            "id, identificador"
+        )
+
+        .eq(
+            "identificador",
+            identificador
+        )
+
+        .maybeSingle();
+
+
+    if (errorBusqueda) {
+
+        throw errorBusqueda;
+
+    }
+
+
+    if (palletExistente) {
+
+        throw new Error(
+            "El pallet " +
+            identificador +
+            " ya existe en Supabase."
+        );
+
+    }
+
+
+    /* =====================================================
+       VERIFICAR PIEZAS DUPLICADAS EN SUPABASE
+       ===================================================== */
+
+    const series =
         piezas
             .map(
-                function (pieza) {
+                function(pieza) {
+
                     return pieza.serie;
+
                 }
             )
             .filter(Boolean);
 
 
-    /* =====================================
-       QUITAR PIEZAS QUE YA NO ESTÁN
-       ===================================== */
+    if (series.length !== piezas.length) {
 
-    for (
-        const piezaActual of actuales || []
-    ) {
-
-        if (
-            !seriesNuevas.includes(
-                piezaActual.numero_serie
-            )
-        ) {
-
-            const { error } =
-                await nanoClient
-                    .from("piezas")
-                    .update({
-
-                        pallet_id:
-                            null,
-
-                        estado:
-                            "LIBERADA"
-
-                    })
-                    .eq(
-                        "id",
-                        piezaActual.id
-                    );
-
-
-            if (error) {
-                throw error;
-            }
-
-        }
+        throw new Error(
+            "Hay una pieza sin número de serie."
+        );
 
     }
 
 
-    /* =====================================
-       GUARDAR / ACTUALIZAR PIEZAS
-       ===================================== */
+    const {
 
-    for (
-        const pieza of piezas
+        data: piezasExistentes,
+
+        error: errorSeries
+
+    } = await nanoClient
+
+        .from("piezas")
+
+        .select(
+            "numero_serie"
+        )
+
+        .in(
+            "numero_serie",
+            series
+        );
+
+
+    if (errorSeries) {
+
+        throw errorSeries;
+
+    }
+
+
+    if (
+        piezasExistentes &&
+        piezasExistentes.length > 0
     ) {
 
-        if (!pieza.serie) {
-            continue;
-        }
+        throw new Error(
 
+            "Estas piezas ya están registradas:\n\n" +
 
-        const { data: existentePieza, error: errorPieza } =
-            await nanoClient
-                .from("piezas")
-                .select("id")
-                .eq(
-                    "numero_serie",
-                    pieza.serie
+            piezasExistentes
+                .map(
+                    function(p) {
+                        return p.numero_serie;
+                    }
                 )
-                .maybeSingle();
+                .join("\n")
 
-
-        if (errorPieza) {
-            throw errorPieza;
-        }
-
-
-        /* ACTUALIZAR */
-
-        if (existentePieza) {
-
-            const { error } =
-                await nanoClient
-                    .from("piezas")
-                    .update({
-
-                        modelo:
-                            pieza.modelo || "",
-
-                        codigo_modelo:
-                            pieza.codigo || "",
-
-                        pallet_id:
-                            pallet.id,
-
-                        estado:
-                            "EN PALLET",
-
-                        nota:
-                            pieza.nota || ""
-
-                    })
-                    .eq(
-                        "id",
-                        existentePieza.id
-                    );
-
-
-            if (error) {
-                throw error;
-            }
-
-        }
-
-
-        /* INSERTAR */
-
-        else {
-
-            const { error } =
-                await nanoClient
-                    .from("piezas")
-                    .insert({
-
-                        numero_serie:
-                            pieza.serie,
-
-                        modelo:
-                            pieza.modelo || "",
-
-                        codigo_modelo:
-                            pieza.codigo || "",
-
-                        pallet_id:
-                            pallet.id,
-
-                        estado:
-                            "EN PALLET",
-
-                        nota:
-                            pieza.nota || "",
-
-                        motivo_segregacion:
-                            ""
-
-                    });
-
-
-            if (error) {
-                throw error;
-            }
-
-        }
+        );
 
     }
 
 
-    /* =====================================
-       ESTADO DEL PALLET
-       ===================================== */
+    /* =====================================================
+       CREAR PALLET
+       ===================================================== */
 
-    const { error: errorEstado } =
+    const {
+
+        data: nuevoPallet,
+
+        error: errorPallet
+
+    } = await nanoClient
+
+        .from("pallets")
+
+        .insert({
+
+            identificador:
+                identificador,
+
+            nota:
+                "",
+
+            estado:
+                "ACTIVO"
+
+        })
+
+        .select(
+            "id, identificador"
+        )
+
+        .single();
+
+
+    if (errorPallet) {
+
+        throw errorPallet;
+
+    }
+
+
+    /* =====================================================
+       PREPARAR PIEZAS
+       ===================================================== */
+
+    const filasPiezas =
+        piezas.map(
+            function(pieza) {
+
+                return {
+
+                    numero_serie:
+                        pieza.serie,
+
+                    modelo:
+                        pieza.modelo || "",
+
+                    codigo_modelo:
+                        pieza.codigo || "",
+
+                    pallet_id:
+                        nuevoPallet.id,
+
+                    estado:
+                        "EN PALLET",
+
+                    nota:
+                        pieza.nota || "",
+
+                    motivo_segregacion:
+                        ""
+
+                };
+
+            }
+        );
+
+
+    /* =====================================================
+       GUARDAR PIEZAS
+       ===================================================== */
+
+    const {
+
+        error: errorInsertPiezas
+
+    } = await nanoClient
+
+        .from("piezas")
+
+        .insert(
+            filasPiezas
+        );
+
+
+    if (errorInsertPiezas) {
+
+        /*
+           Si las piezas fallan, eliminamos
+           el pallet que acabamos de crear.
+        */
+
         await nanoClient
             .from("pallets")
-            .update({
-
-                estado:
-                    piezas.length > 0
-                        ? "ACTIVO"
-                        : "VACIO"
-
-            })
+            .delete()
             .eq(
                 "id",
-                pallet.id
+                nuevoPallet.id
             );
 
 
-    if (errorEstado) {
-        throw errorEstado;
+        throw errorInsertPiezas;
+
     }
 
 
-    return pallet;
+    console.log(
+        "✅ Pallet guardado:",
+        identificador
+    );
+
+
+    console.log(
+        "✅ Piezas guardadas:",
+        piezas.length
+    );
+
+
+    return nuevoPallet;
 
 }
+
+
+/* =========================================================
+   INTERCEPTAR FINALIZAR PALLET
+   ========================================================= */
+
+function conectarBotonFinalizar() {
+
+    const boton =
+        document.getElementById(
+            "finalizarPallet"
+        );
+
+
+    if (!boton) {
+
+        console.error(
+            "No se encontró el botón finalizarPallet."
+        );
+
+        return;
+
+    }
+
+
+    /*
+       CAPTURE = TRUE
+
+       Esto hace que nuestro evento se ejecute
+       antes que el evento original de script.js.
+    */
+
+    boton.addEventListener(
+
+        "click",
+
+        async function(event) {
+
+            /*
+               Detenemos el comportamiento anterior
+               para que no genere el QR viejo.
+            */
+
+            event.preventDefault();
+
+            event.stopImmediatePropagation();
+
+
+            try {
+
+                const identificador =
+                    document
+                        .getElementById(
+                            "palletNumero"
+                        )
+                        .value
+                        .trim();
+
+
+                const piezas =
+                    Array.isArray(
+                        window.palletActual
+                    )
+                        ? window.palletActual
+                        : obtenerPiezasDeAplicacion();
+
+
+                if (!identificador) {
+
+                    alert(
+                        "Escribe el identificador del pallet."
+                    );
+
+                    return;
+
+                }
+
+
+                if (
+                    !piezas ||
+                    piezas.length === 0
+                ) {
+
+                    alert(
+                        "Agrega al menos una pieza."
+                    );
+
+                    return;
+
+                }
+
+
+                /*
+                   Guardamos TODO en Supabase
+                */
+
+                await nanoGuardarPalletCompleto(
+
+                    identificador,
+
+                    piezas
+
+                );
+
+
+                /*
+                   Generamos QR nuevo.
+                   El QR solamente guarda
+                   el identificador del pallet.
+                */
+
+                nanoGenerarQRPallet(
+                    identificador
+                );
+
+
+                alert(
+                    "✅ PALLET GUARDADO EN SUPABASE\n\n" +
+                    identificador +
+                    "\n" +
+                    piezas.length +
+                    " piezas"
+                );
+
+
+            }
+
+            catch(error) {
+
+                console.error(
+                    "Error guardando pallet:",
+                    error
+                );
+
+
+                alert(
+
+                    "❌ NO SE PUDO GUARDAR EL PALLET\n\n" +
+
+                    (
+                        error?.message ||
+                        "Error desconocido."
+                    )
+
+                );
+
+            }
+
+        },
+
+        true
+
+    );
+
+
+    console.log(
+        "✅ Finalizar Pallet conectado a Supabase."
+    );
+
+}
+
+
+/* =========================================================
+   OBTENER PIEZAS DE LA APLICACIÓN
+   ========================================================= */
+
+function obtenerPiezasDeAplicacion() {
+
+    /*
+       Esta función intenta encontrar
+       la variable que utiliza la aplicación.
+    */
+
+    if (
+        typeof window.palletActual !==
+        "undefined"
+    ) {
+
+        return window.palletActual;
+
+    }
+
+
+    return [];
+
+}
+
+
+/* =========================================================
+   CONSULTAR PIEZA
+   ========================================================= */
+
+window.consultarPiezaSupabase =
+async function(
+    numeroSerie
+) {
+
+    if (!nanoClient) {
+
+        if (!iniciarSupabase()) {
+
+            throw new Error(
+                "Supabase no está disponible."
+            );
+
+        }
+
+    }
+
+
+    const {
+
+        data,
+
+        error
+
+    } = await nanoClient
+
+        .from("piezas")
+
+        .select(
+            "*"
+        )
+
+        .eq(
+            "numero_serie",
+            numeroSerie
+        )
+
+        .maybeSingle();
+
+
+    if (error) {
+
+        throw error;
+
+    }
+
+
+    return data;
+
+};
 
 
 /* =========================================================
    CONSULTAR PALLET
    ========================================================= */
 
-async function nanoConsultarPallet(
+window.consultarPalletSupabase =
+async function(
     identificador
 ) {
 
-    const { data: pallet, error: errorPallet } =
-        await nanoClient
-            .from("pallets")
-            .select("*")
-            .eq(
-                "identificador",
-                identificador
-            )
-            .maybeSingle();
+    if (!nanoClient) {
+
+        if (!iniciarSupabase()) {
+
+            throw new Error(
+                "Supabase no está disponible."
+            );
+
+        }
+
+    }
+
+
+    const {
+
+        data: pallet,
+
+        error: errorPallet
+
+    } = await nanoClient
+
+        .from("pallets")
+
+        .select(
+            "*"
+        )
+
+        .eq(
+            "identificador",
+            identificador
+        )
+
+        .maybeSingle();
 
 
     if (errorPallet) {
+
         throw errorPallet;
+
     }
 
 
     if (!pallet) {
 
-        throw new Error(
-            "No existe el pallet " +
-            identificador
-        );
+        return null;
 
     }
 
 
-    const { data: piezas, error: errorPiezas } =
-        await nanoClient
-            .from("piezas")
-            .select("*")
-            .eq(
-                "pallet_id",
-                pallet.id
-            )
-            .neq(
-                "estado",
-                "SEGREGADA"
-            )
-            .order(
-                "id",
-                {
-                    ascending: true
-                }
-            );
+    const {
+
+        data: piezas,
+
+        error: errorPiezas
+
+    } = await nanoClient
+
+        .from("piezas")
+
+        .select(
+            "*"
+        )
+
+        .eq(
+            "pallet_id",
+            pallet.id
+        )
+
+        .neq(
+            "estado",
+            "SEGREGADA"
+        )
+
+        .order(
+            "id",
+            {
+                ascending: true
+            }
+        );
 
 
     if (errorPiezas) {
+
         throw errorPiezas;
+
     }
 
 
     return {
 
         pallet:
-            pallet.identificador,
+            pallet,
 
         piezas:
-            (piezas || []).map(
-                function (pieza) {
-
-                    return {
-
-                        serie:
-                            pieza.numero_serie,
-
-                        modelo:
-                            pieza.modelo,
-
-                        codigo:
-                            pieza.codigo_modelo,
-
-                        nota:
-                            pieza.nota || "",
-
-                        estado:
-                            pieza.estado
-
-                    };
-
-                }
-            )
+            piezas || []
 
     };
-
-}
-
-
-/* =========================================================
-   BUSCAR PIEZA
-   ========================================================= */
-
-async function nanoConsultarPieza(
-    numeroSerie
-) {
-
-    const { data, error } =
-        await nanoClient
-            .from("piezas")
-            .select("*")
-            .eq(
-                "numero_serie",
-                numeroSerie
-            )
-            .maybeSingle();
-
-
-    if (error) {
-        throw error;
-    }
-
-
-    return data;
-
-}
-
-
-/* =========================================================
-   MODIFICAR NOTA
-   ========================================================= */
-
-async function nanoModificarNota(
-    numeroSerie,
-    nota
-) {
-
-    const { error } =
-        await nanoClient
-            .from("piezas")
-            .update({
-
-                nota:
-                    nota || ""
-
-            })
-            .eq(
-                "numero_serie",
-                numeroSerie
-            );
-
-
-    if (error) {
-        throw error;
-    }
-
-}
-
-
-/* =========================================================
-   SEGREGAR PIEZA
-   ========================================================= */
-
-async function nanoSegregarPieza(
-    numeroSerie,
-    motivo
-) {
-
-    const { error } =
-        await nanoClient
-            .from("piezas")
-            .update({
-
-                estado:
-                    "SEGREGADA",
-
-                motivo_segregacion:
-                    motivo || "",
-
-                pallet_id:
-                    null
-
-            })
-            .eq(
-                "numero_serie",
-                numeroSerie
-            );
-
-
-    if (error) {
-        throw error;
-    }
-
-}
-
-
-/* =========================================================
-   GUARDAR RACK
-   ========================================================= */
-
-async function nanoGuardarRack(
-    identificador,
-    pallets
-) {
-
-    const { data: existente, error: errorBusqueda } =
-        await nanoClient
-            .from("racks")
-            .select("id, identificador")
-            .eq(
-                "identificador",
-                identificador
-            )
-            .maybeSingle();
-
-
-    if (errorBusqueda) {
-        throw errorBusqueda;
-    }
-
-
-    let rack;
-
-
-    if (existente) {
-
-        rack = existente;
-
-    }
-
-
-    else {
-
-        const { data, error } =
-            await nanoClient
-                .from("racks")
-                .insert({
-
-                    identificador:
-                        identificador,
-
-                    nota:
-                        ""
-
-                })
-                .select()
-                .single();
-
-
-        if (error) {
-            throw error;
-        }
-
-
-        rack = data;
-
-    }
-
-
-    for (
-        const pallet of pallets
-    ) {
-
-        const { data: dbPallet, error } =
-            await nanoClient
-                .from("pallets")
-                .select("id")
-                .eq(
-                    "identificador",
-                    pallet.pallet
-                )
-                .maybeSingle();
-
-
-        if (error) {
-            throw error;
-        }
-
-
-        if (!dbPallet) {
-
-            throw new Error(
-                "No existe el pallet " +
-                pallet.pallet
-            );
-
-        }
-
-
-        const { error: errorUpdate } =
-            await nanoClient
-                .from("pallets")
-                .update({
-
-                    rack_id:
-                        rack.id
-
-                })
-                .eq(
-                    "id",
-                    dbPallet.id
-                );
-
-
-        if (errorUpdate) {
-            throw errorUpdate;
-        }
-
-    }
-
-
-    return rack;
-
-}
-
-
-/* =========================================================
-   CONSULTAR RACK
-   ========================================================= */
-
-async function nanoConsultarRack(
-    identificador
-) {
-
-    const { data: rack, error: errorRack } =
-        await nanoClient
-            .from("racks")
-            .select("*")
-            .eq(
-                "identificador",
-                identificador
-            )
-            .maybeSingle();
-
-
-    if (errorRack) {
-        throw errorRack;
-    }
-
-
-    if (!rack) {
-
-        throw new Error(
-            "No existe el rack " +
-            identificador
-        );
-
-    }
-
-
-    const { data: pallets, error: errorPallets } =
-        await nanoClient
-            .from("pallets")
-            .select(
-                "id, identificador"
-            )
-            .eq(
-                "rack_id",
-                rack.id
-            );
-
-
-    if (errorPallets) {
-        throw errorPallets;
-    }
-
-
-    const resultado = [];
-
-
-    for (
-        const pallet of pallets || []
-    ) {
-
-        const datos =
-            await nanoConsultarPallet(
-                pallet.identificador
-            );
-
-
-        resultado.push(
-            datos
-        );
-
-    }
-
-
-    return {
-
-        rack:
-            rack.identificador,
-
-        pallets:
-            resultado
-
-    };
-
-}
-
-
-/* =========================================================
-   HACER FUNCIONES ACCESIBLES
-   ========================================================= */
-
-window.NANO_DB = {
-
-    guardarPallet:
-        nanoGuardarPallet,
-
-    consultarPallet:
-        nanoConsultarPallet,
-
-    consultarPieza:
-        nanoConsultarPieza,
-
-    modificarNota:
-        nanoModificarNota,
-
-    segregarPieza:
-        nanoSegregarPieza,
-
-    guardarRack:
-        nanoGuardarRack,
-
-    consultarRack:
-        nanoConsultarRack
 
 };
 
 
-console.log(
-    "✅ NANO QR: conexión con Supabase preparada."
+/* =========================================================
+   INICIALIZAR
+   ========================================================= */
+
+function iniciarNanoBaseDatos() {
+
+    if (
+        !nanoClient
+    ) {
+
+        iniciarSupabase();
+
+    }
+
+
+    conectarBotonFinalizar();
+
+}
+
+
+/*
+   Como database.js se carga al final
+   del HTML, podemos esperar un instante
+   para asegurar que script.js también
+   haya terminado de cargar.
+*/
+
+window.addEventListener(
+    "load",
+    function() {
+
+        setTimeout(
+            iniciarNanoBaseDatos,
+            100
+        );
+
+    }
 );
