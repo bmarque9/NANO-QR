@@ -27,7 +27,13 @@ let escaneandoConsultaPieza = false;
 let escaneandoPalletRack = false;
 
 let escaneandoRack = false;
+/* =========================================
+   ACCESO DE SUPABASE A LAS PIEZAS ACTUALES
+   ========================================= */
 
+window.NANO_GET_PIEZAS = function() {
+    return palletActual;
+};
 
 /* ========================================= */
 /* MOSTRAR PANTALLA */
