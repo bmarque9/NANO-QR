@@ -602,6 +602,12 @@ if ("serviceWorker" in navigator) {
         navigator.serviceWorker.register("./service-worker.js");
     });
 }
+<script>
+if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+        navigator.serviceWorker.register("./service-worker.js");
+    });
+}
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
