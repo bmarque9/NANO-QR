@@ -40,11 +40,11 @@ function iniciarSupabase() {
     }
 
 
-    if (!NANO_SUPABASE_KEY ||
-        NANO_SUPABASE_KEY ===
-        "sb_publishable_jgN5hee6h-Xsohkoe8pfug__oWSZRyK") {
+  if (!NANO_SUPABASE_KEY ||
+    NANO_SUPABASE_KEY ===
+    "PEGA_AQUI_TU_SB_PUBLISHABLE_KEY") {
 
-        console.error(
+  console.error(
             "Falta la Publishable Key."
         );
 
