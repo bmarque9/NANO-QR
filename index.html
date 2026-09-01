@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>NANO QR</title>
+
+<link rel="stylesheet" href="styles.css">
+
+<script src="https://unpkg.com/html5-qrcode"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+
+<body>
+
+<div class="app">
+
+<h1>NANO QR</h1>
+
+<p class="subtitulo">
+Trazabilidad de material
+</p>
+
+
+<!-- ================= MENU ================= -->
+
+<div id="menu">
+
+<button id="nuevoPallet">
+📦 CREAR NUEVO PALLET
+</button>
+
+<button id="consultarPallet">
+🔍 CONSULTAR PALLET
+</button>
+
+<button id="consultarPieza">
+📷 CONSULTAR PIEZA
+</button>
+
+<button id="nuevoRack">
+🗄️ CREAR RACK
+</button>
+
+<button id="consultarRack">
+🔎 CONSULTAR RACK
+</button>
+
+</div>
+
+
+<!-- ================= CREAR PALLET ================= -->
+
+<div id="crear" class="oculto">
+
+<h2>NUEVO PALLET</h2>
+
+<label>Identificador del pallet</label>
+
+<input
+id="palletNumero"
+placeholder="Ejemplo: NANO-001"
+>
+
+<p class="ayuda">
+Puedes modificar el identificador manualmente.
+</p>
+
+<div class="contador">
+Piezas:
+<strong id="contadorPiezas">0 / 18</strong>
+</div>
+
+<h3>Piezas agregadas</h3>
+
+<div id="listaPiezas"></div>
+
+<button id="agregarPieza">
+➕ AGREGAR PIEZA
+</button>
+
+<button id="finalizarPallet">
+✅ FINALIZAR PALLET
+</button>
+
+<button id="volverMenu" class="secundario">
+← VOLVER
+</button>
+
+</div>
+
+
+<!-- ================= METODO PIEZA ================= -->
+
+<div id="metodoPieza" class="oculto">
+
+<h2>AGREGAR PIEZA</h2>
+
+<button id="escanearPiezaBoton">
+📷 ESCANEAR PIEZA
+</button>
+
+<button id="manualPiezaBoton">
+⌨️ CAPTURA MANUAL
+</button>
+
+<button id="cancelarMetodo" class="secundario">
+← CANCELAR
+</button>
+
+</div>
+
+
+<!-- ================= ESCANEAR PIEZA ================= -->
+
+<div id="escanearPieza" class="oculto">
+
+<h2>ESCANEAR PIEZA</h2>
+
+<div id="reader"></div>
+
+<div id="piezaDetectada" class="oculto">
+
+<div class="dato">
+<span>Número de serie</span>
+<strong id="serie"></strong>
+</div>
+
+<div class="dato">
+<span>Modelo</span>
+<strong id="modelo"></strong>
+</div>
+
+<div class="dato">
+<span>Código</span>
+<strong id="codigoModelo"></strong>
+</div>
+
+<label>Nota / motivo</label>
+
+<textarea id="notaEscaner"></textarea>
+
+<button id="confirmarPiezaEscaner">
+✅ AGREGAR AL PALLET
+</button>
+
+</div>
+
+<button id="cancelarEscaneo" class="secundario">
+← CANCELAR
+</button>
+
+</div>
+
+
+<!-- ================= MANUAL ================= -->
+
+<div id="manual" class="oculto">
+
+<h2>CAPTURA MANUAL</h2>
+
+<input
+id="codigoManual"
+placeholder="Código completo o número de serie"
+>
+
+<button id="procesarManual">
+🔎 IDENTIFICAR
+</button>
+
+<div id="resultadoManual" class="oculto">
+
+<div class="dato">
+<span>Número de serie</span>
+<strong id="serieManual"></strong>
+</div>
+
+<div class="dato">
+<span>Modelo</span>
+<strong id="modeloManual"></strong>
+</div>
+
+<div class="dato">
+<span>Código</span>
+<strong id="codigoModeloManual"></strong>
+</div>
+
+<label>Nota / motivo</label>
+
+<textarea id="notaManual"></textarea>
+
+<button id="confirmarPiezaManual">
+✅ AGREGAR AL PALLET
+</button>
+
+</div>
+
+<button id="cancelarManual" class="secundario">
+← CANCELAR
+</button>
+
+</div>
+
+
+<!-- ================= CONSULTA PIEZA ================= -->
+
+<div id="consultaPieza" class="oculto">
+
+<h2>CONSULTAR PIEZA</h2>
+
+<div id="readerConsultaPieza"></div>
+
+<div id="resultadoConsultaPieza" class="oculto">
+
+<div class="resultadoPrincipal">
+
+<span>NÚMERO DE SERIE</span>
+
+<strong id="serieConsultaPieza"></strong>
+
+</div>
+
+<div class="dato">
+
+<span>Modelo</span>
+
+<strong id="modeloConsultaPieza"></strong>
+
+</div>
+
+<div class="dato">
+
+<span>Código</span>
+
+<strong id="codigoConsultaPieza"></strong>
+
+</div>
+
+<button id="copiarSerie">
+📋 COPIAR NÚMERO DE SERIE
+</button>
+
+<button id="otraPieza">
+🔄 ESCANEAR OTRA
+</button>
+
+</div>
+
+<button id="cancelarConsultaPieza" class="secundario">
+← VOLVER
+</button>
+
+</div>
+
+
+<!-- ================= QR PALLET ================= -->
+
+<div id="qrPallet" class="oculto">
+
+<h2>PALLET GENERADO</h2>
+
+<div class="palletId">
+
+<span>Identificador</span>
+
+<strong id="qrPalletNumero"></strong>
+
+</div>
+
+<div id="codigoQR"></div>
+
+<button id="nuevoQR">
+📦 CREAR OTRO PALLET
+</button>
+
+<button id="volverQR" class="secundario">
+← MENÚ
+</button>
+
+</div>
+
+
+<!-- ================= CONSULTAR PALLET ================= -->
+
+<div id="consultar" class="oculto">
+
+<h2>CONSULTAR PALLET</h2>
+
+<div id="readerPallet"></div>
+
+<div id="informacionPallet" class="oculto">
+
+<div class="palletId">
+
+<span>Pallet</span>
+
+<strong id="consultaNumero"></strong>
+
+</div>
+
+<div id="consultaResumen"></div>
+
+<div id="consultaPiezas"></div>
+
+<button id="agregarPiezaExistente">
+➕ AGREGAR PIEZA
+</button>
+
+<button id="segregarPieza" class="peligro">
+➖ SEGREGAR PIEZA
+</button>
+
+<button id="editarNota">
+✏️ MODIFICAR NOTA
+</button>
+
+<button id="generarQRActualizado">
+🔄 GENERAR QR ACTUALIZADO
+</button>
+
+</div>
+
+<button id="cancelarConsulta" class="secundario">
+← CANCELAR
+</button>
+
+</div>
+
+
+<!-- ================= SELECCION ================= -->
+
+<div id="seleccionarPieza" class="oculto">
+
+<h2 id="tituloSeleccion">
+SELECCIONAR PIEZA
+</h2>
+
+<div id="listaSeleccion"></div>
+
+<button id="cancelarSeleccion" class="secundario">
+← CANCELAR
+</button>
+
+</div>
+
+
+<!-- ================= SEGREGAR ================= -->
+
+<div id="segregar" class="oculto">
+
+<h2>SEGREGAR PIEZA</h2>
+
+<div class="resultadoPrincipal">
+
+<span>NÚMERO DE SERIE</span>
+
+<strong id="serieSegregar"></strong>
+
+</div>
+
+<div class="dato">
+
+<span>Modelo</span>
+
+<strong id="modeloSegregar"></strong>
+
+</div>
+
+<label>Motivo de segregación</label>
+
+<textarea
+id="motivoSegregacion"
+placeholder="Ejemplo: Defecto dimensional OP5"
+></textarea>
+
+<button id="confirmarSegregacion" class="peligro">
+➖ CONFIRMAR SEGREGACIÓN
+</button>
+
+<button id="cancelarSegregacion" class="secundario">
+← CANCELAR
+</button>
+
+</div>
+
+
+<!-- ================= EDITAR NOTA ================= -->
+
+<div id="editar" class="oculto">
+
+<h2>MODIFICAR NOTA</h2>
+
+<div class="resultadoPrincipal">
+
+<span>NÚMERO DE SERIE</span>
+
+<strong id="serieEditar"></strong>
+
+</div>
+
+<div class="dato">
+
+<span>Modelo</span>
+
+<strong id="modeloEditar"></strong>
+
+</div>
+
+<label>Nueva nota</label>
+
+<textarea id="nuevaNota"></textarea>
+
+<button id="guardarNota">
+💾 GUARDAR NOTA
+</button>
+
+<button id="cancelarEditar" class="secundario">
+← CANCELAR
+</button>
+
+</div>
+
+
+<!-- ================= CREAR RACK ================= -->
+
+<div id="crearRack" class="oculto">
+
+<h2>NUEVO RACK</h2>
+
+<label>Identificador del rack</label>
+
+<input
+id="rackNumero"
+placeholder="Ejemplo: RACK-A01"
+>
+
+<p class="ayuda">
+El rack puede contener pallets de diferentes modelos.
+</p>
+
+<div class="contador">
+Pallets:
+<strong id="contadorPalletsRack">0</strong>
+</div>
+
+<div id="listaPalletsRack"></div>
+
+<button id="agregarPalletRack">
+➕ AGREGAR PALLET
+</button>
+
+<button id="finalizarRack">
+✅ FINALIZAR RACK
+</button>
+
+<button id="cancelarRack" class="secundario">
+← VOLVER
+</button>
+
+</div>
+
+
+<!-- ================= AGREGAR PALLET RACK ================= -->
+
+<div id="agregarPalletRackPantalla" class="oculto">
+
+<h2>AGREGAR PALLET AL RACK</h2>
+
+<p class="ayuda">
+Escanea el QR del pallet que quieres colocar en este rack.
+</p>
+
+<div id="readerPalletRack"></div>
+
+<div id="palletDetectadoRack" class="oculto">
+
+<div class="resultadoPrincipal">
+
+<span>PALLET</span>
+
+<strong id="rackPalletNumero"></strong>
+
+</div>
+
+<div id="rackPalletResumen"></div>
+
+<button id="confirmarPalletRack">
+✅ AGREGAR AL RACK
+</button>
+
+</div>
+
+<button id="cancelarAgregarPalletRack"
+class="secundario">
+← CANCELAR
+</button>
+
+</div>
+
+
+<!-- ================= QR RACK ================= -->
+
+<div id="qrRack" class="oculto">
+
+<h2>RACK GENERADO</h2>
+
+<div class="palletId">
+
+<span>Identificador</span>
+
+<strong id="qrRackNumero"></strong>
+
+</div>
+
+<div id="codigoQRRack"></div>
+
+<p class="instruccion">
+Este QR contiene la información actual del rack.
+</p>
+
+<button id="nuevoRackQR">
+🗄️ CREAR OTRO RACK
+</button>
+
+<button id="volverRackQR" class="secundario">
+← MENÚ
+</button>
+
+</div>
+
+
+<!-- ================= CONSULTAR RACK ================= -->
+
+<div id="consultarRackPantalla" class="oculto">
+
+<h2>CONSULTAR RACK</h2>
+
+<div id="readerRack"></div>
+
+<div id="informacionRack" class="oculto">
+
+<div class="palletId">
+
+<span>RACK</span>
+
+<strong id="consultaRackNumero"></strong>
+
+</div>
+
+<div id="resumenRack"></div>
+
+<div id="palletsRackConsulta"></div>
+
+<button id="retirarPalletRack" class="peligro">
+➖ RETIRAR PALLET
+</button>
+
+<button id="generarRackActualizado">
+🔄 GENERAR QR ACTUALIZADO
+</button>
+
+</div>
+
+<button id="cancelarConsultaRack"
+class="secundario">
+← CANCELAR
+</button>
+
+</div>
+
+
+<!-- ================= SELECCIONAR PALLET ================= -->
+
+<div id="seleccionarPalletRack" class="oculto">
+
+<h2>RETIRAR PALLET</h2>
+
+<div id="listaPalletsSeleccion"></div>
+
+<button id="cancelarSeleccionPallet"
+class="secundario">
+← CANCELAR
+</button>
+
+</div>
+
+
+</div>
+
+<script src="script.js"></script>
+
+</body>
+</html>

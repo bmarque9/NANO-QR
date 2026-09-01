@@ -1,0 +1,492 @@
+* {
+box-sizing:border-box;
+margin:0;
+padding:0;
+}
+
+body {
+
+font-family:Arial,sans-serif;
+
+background:#f2f4f5;
+
+min-height:100vh;
+
+display:flex;
+
+justify-content:center;
+
+align-items:center;
+
+color:#222;
+
+}
+
+.app {
+
+width:100%;
+
+max-width:450px;
+
+min-height:650px;
+
+background:white;
+
+padding:30px 25px;
+
+text-align:center;
+
+}
+
+h1 {
+
+font-size:32px;
+
+margin-bottom:5px;
+
+}
+
+h2 {
+
+margin-bottom:20px;
+
+}
+
+h3 {
+
+text-align:left;
+
+margin:20px 0 10px;
+
+}
+
+.subtitulo {
+
+color:#777;
+
+margin-bottom:25px;
+
+}
+
+button {
+
+width:100%;
+
+padding:15px;
+
+border:none;
+
+border-radius:12px;
+
+background:#008c83;
+
+color:white;
+
+font-size:16px;
+
+font-weight:bold;
+
+cursor:pointer;
+
+margin-top:10px;
+
+}
+
+button:hover {
+
+opacity:.9;
+
+}
+
+.secundario {
+
+background:#555;
+
+}
+
+.peligro {
+
+background:#b3261e;
+
+}
+
+.oculto {
+
+display:none!important;
+
+}
+
+label {
+
+display:block;
+
+text-align:left;
+
+font-weight:bold;
+
+margin-top:15px;
+
+margin-bottom:8px;
+
+}
+
+input {
+
+width:100%;
+
+padding:15px;
+
+border:2px solid #008c83;
+
+border-radius:12px;
+
+font-size:16px;
+
+}
+
+textarea {
+
+width:100%;
+
+min-height:90px;
+
+padding:12px;
+
+border:1px solid #ccc;
+
+border-radius:10px;
+
+font-family:Arial;
+
+font-size:16px;
+
+resize:vertical;
+
+}
+
+.ayuda {
+
+color:#777;
+
+font-size:13px;
+
+margin-top:8px;
+
+line-height:1.4;
+
+}
+
+.contador {
+
+background:#f4f6f6;
+
+padding:12px;
+
+border-radius:10px;
+
+margin-top:15px;
+
+font-size:16px;
+
+}
+
+.contador strong {
+
+color:#008c83;
+
+}
+
+.palletId {
+
+background:#f4f6f6;
+
+padding:18px;
+
+border-radius:12px;
+
+margin-bottom:20px;
+
+}
+
+.palletId span {
+
+display:block;
+
+color:#777;
+
+font-size:13px;
+
+margin-bottom:5px;
+
+}
+
+.palletId strong {
+
+font-size:25px;
+
+word-break:break-all;
+
+}
+
+#reader,
+#readerPallet,
+#readerConsultaPieza,
+#readerPalletRack,
+#readerRack {
+
+width:100%;
+
+max-width:350px;
+
+margin:0 auto 20px;
+
+border-radius:15px;
+
+overflow:hidden;
+
+}
+
+.dato {
+
+text-align:left;
+
+margin-bottom:15px;
+
+padding-bottom:12px;
+
+border-bottom:1px solid #ddd;
+
+}
+
+.dato span {
+
+display:block;
+
+color:#777;
+
+font-size:13px;
+
+margin-bottom:5px;
+
+}
+
+.dato strong {
+
+font-size:18px;
+
+word-break:break-all;
+
+}
+
+.resultadoPrincipal {
+
+background:#f4f6f6;
+
+padding:20px 15px;
+
+border-radius:12px;
+
+margin-bottom:20px;
+
+}
+
+.resultadoPrincipal span {
+
+display:block;
+
+color:#777;
+
+font-size:13px;
+
+margin-bottom:8px;
+
+}
+
+.resultadoPrincipal strong {
+
+display:block;
+
+font-size:22px;
+
+word-break:break-all;
+
+}
+
+.pieza {
+
+text-align:left;
+
+background:#f4f6f6;
+
+padding:15px;
+
+border-radius:12px;
+
+margin-bottom:10px;
+
+}
+
+.pieza strong {
+
+display:block;
+
+word-break:break-all;
+
+margin:4px 0;
+
+}
+
+.pieza span {
+
+display:block;
+
+color:#777;
+
+font-size:13px;
+
+margin-top:4px;
+
+}
+
+.piezaSeleccion {
+
+width:100%;
+
+text-align:left;
+
+background:#f4f6f6;
+
+border:2px solid #ddd;
+
+color:#222;
+
+padding:15px;
+
+border-radius:12px;
+
+margin-bottom:10px;
+
+}
+
+.piezaSeleccion strong {
+
+display:block;
+
+word-break:break-all;
+
+}
+
+.piezaSeleccion span {
+
+display:block;
+
+color:#777;
+
+font-size:13px;
+
+margin-top:5px;
+
+}
+
+.palletRack {
+
+text-align:left;
+
+background:#f4f6f6;
+
+padding:15px;
+
+border-radius:12px;
+
+margin-bottom:10px;
+
+}
+
+.palletRack strong {
+
+display:block;
+
+font-size:18px;
+
+margin-bottom:8px;
+
+}
+
+.palletRack span {
+
+display:block;
+
+font-size:13px;
+
+color:#777;
+
+margin-top:4px;
+
+}
+
+.palletSeleccion {
+
+width:100%;
+
+text-align:left;
+
+background:#f4f6f6;
+
+border:2px solid #ddd;
+
+color:#222;
+
+padding:15px;
+
+border-radius:12px;
+
+margin-bottom:10px;
+
+}
+
+#codigoQR,
+#codigoQRRack {
+
+display:flex;
+
+justify-content:center;
+
+align-items:center;
+
+margin:25px 0;
+
+min-height:240px;
+
+}
+
+.instruccion {
+
+color:#777;
+
+font-size:14px;
+
+margin-bottom:15px;
+
+}
+
+#consultaResumen,
+#resumenRack {
+
+background:#f4f6f6;
+
+padding:15px;
+
+border-radius:12px;
+
+margin-bottom:15px;
+
+text-align:left;
+
+}
+
+#consultaPiezas,
+#palletsRackConsulta {
+
+text-align:left;
+
+}
