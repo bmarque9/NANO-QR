@@ -1,4 +1,4 @@
-const CACHE_NAME = "nano-qr-v1";
+const CACHE_NAME = "nano-qr-v2";
 
 const ARCHIVOS = [
   "./",
