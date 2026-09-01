@@ -667,24 +667,19 @@ function conectarBotonFinalizar() {
 
 function obtenerPiezasDeAplicacion() {
 
-    /*
-       Esta función intenta encontrar
-       la variable que utiliza la aplicación.
-    */
-
     if (
-        typeof window.palletActual !==
-        "undefined"
+        typeof window.NANO_GET_PIEZAS ===
+        "function"
     ) {
 
-        return window.palletActual;
+        return window.NANO_GET_PIEZAS();
 
     }
 
-
     return [];
-
 }
+
+
 
 
 /* =========================================================
